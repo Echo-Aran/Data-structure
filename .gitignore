@@ -29,4 +29,8 @@
 # Executables
 *.exe
 *.out
-*.app
+*.appc
+
+# VS
+*.sln
+*.vcxproj
