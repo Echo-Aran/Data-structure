@@ -38,7 +38,7 @@ void Print(ListNode* phead)//打印
 bool Empty(ListNode* phead)//判断是否为单循环链表
 {
 	assert(phead);
-	return phead->next == phead;//学着点  正确的时候为自身循环
+	return phead->next == phead;//正确的时候为自身循环
 }
 
 void ListInsert(ListNode* pos, LTDataType x)//pos前位置插入

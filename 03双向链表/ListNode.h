@@ -34,3 +34,4 @@ ListNode* Find(ListNode*phead,LTDataType x);
 //在pos位置前插入
 void ListInsert(ListNode* pos, LTDataType x);
 //删除pos位置的节点
+void ListErase(ListNode* pos);

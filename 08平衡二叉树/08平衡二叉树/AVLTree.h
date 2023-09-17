@@ -1,4 +1,5 @@
 #pragma once
+#include<assert.h>
 template<class K,class V>
 struct AVLTreeNode 
 {
@@ -6,7 +7,7 @@ struct AVLTreeNode
 	pair<K, V> _kv;
 
 	//平衡因子（balance factor）
-	int _bf;
+	int _bf;//rightHeight-leftHeight
 
 	//存储的三叉链
 	AVLTreeNode<K, V>* _parent;//方便找到父节点
@@ -51,11 +52,11 @@ public:
 		{
 			if (cur->_kv.first < kv.first) {
 				parent = cur;
-				cur = cur->_left;
+				cur = cur->_right;
 			}
 			else if (cur->_kv.first > kv.first) {
 				parent = cur;
-				cur = cur->_right;
+				cur = cur->_left;
 			}
 			else {
 				return false;
@@ -67,17 +68,34 @@ public:
 		if (cur->_kv.first < parent->_kv.first) {
 			parent->_left = cur;
 			cur->_parent = parent;
-			parent->_bf--;
+			//parent->_bf--;
 		}
 		else
 		{
 			parent->_right = cur;
 			cur->_parent = parent;
-			parent->_bf++;
+			//parent->_bf++;
 		}
-
-		while (parent)//最远要更新到根节点
+		//cout <<cur->_kv.first<< endl;
+		
+		//最远要更新到根节点
+		while (parent)
 		{
+
+			//更新平衡因子
+			/*要放在循环内，因为每次向上查找时要更新上面的平衡因子
+			如果放在外面只能更新一次，做不到向上更新*/
+			if (cur == parent->_left)
+			{
+				parent->_bf--;
+			}
+			else // if (cur == parent->_right)
+			{
+				parent->_bf++;
+			}
+
+
+			//判断情况
 			if (parent->_bf == 0) {
 				break;
 			}
@@ -89,21 +107,21 @@ public:
 			else if(abs(parent->_bf)==2)
 			{
 				//判断是哪一种旋转情况
-				if (parent->_bf==2&&cur->bf==1)
+				if (parent->_bf==2&&cur->_bf==1)
 				{
-					rotateL(parent);
+					RotateL(parent);
 				}
-				else if (parent->_bf == -2 && cur->bf == -1)
+				else if (parent->_bf == -2 && cur->_bf == -1)
 				{
-					rotateR(parent);
+					RotateR(parent);
 				}
-				else if (parent->_bf == -2 && cur->bf == 1)
+				else if (parent->_bf == -2 && cur->_bf == 1)
 				{
-					rotateLR(parent);
+					RotateLR(parent);
 				}
-				else if (parent->_bf == 2 && cur->bf == -1)
+				else if (parent->_bf == 2 && cur->_bf == -1)
 				{
-					rotateRL(parent);
+					RotateRL(parent);
 				}
 				break;
 
@@ -125,11 +143,11 @@ public:
 		{
 			if (cur->_kv.first < key) // key值大于该结点的值
 			{
-				cur = cur->_left; // 在该结点的右子树当中查找
+				cur = cur->_right; // 在该结点的右子树当中查找
 			}
 			else if (cur->_kv.first < key) // key值小于该结点的值
 			{
-				cur = cur->_right; // 在该结点的左子树当中查找
+				cur = cur->_left; // 在该结点的左子树当中查找
 			}
 			else // 当前节点的值等于key值
 			{
@@ -139,7 +157,7 @@ public:
 		return nullptr; //查找失败
 	}
 
-	bool Erase(const K& key)
+	/*bool Erase(const K& key)
 	{
 		//用于遍历二叉树
 		Node* cur = parent;
@@ -344,7 +362,7 @@ public:
 		delete del;
 		return true;
 
-	}
+	}*/
 
 	void Inorder()
 	{
@@ -352,9 +370,9 @@ public:
 		cout << endl;
 	}
 
-	void Height()
+	int Height()
 	{
-		_Height(_root);
+		return _Height(_root);
 	}
 
 	bool IsBalancedTree()
@@ -363,14 +381,15 @@ public:
 	}
 
 private:
-	void rotateL(Node* parent)
+
+	void RotateL(Node* parent)
 	{
 		Node* subR = parent->_right;
 		Node* subRL = subR->_left;
 		Node* pparent = parent->_parent;
 
-		//1.建立subRL与parent之间的关系
-		//左子树滑动
+		/*1.建立subRL与parent之间的关系
+		左子树滑动*/
 		parent->_right = subRL;
 		if (subRL) {
 			subRL->_parent = parent;
@@ -381,8 +400,8 @@ private:
 		subR->_left = parent;
 		parent->_parent = subR;
 
-		//3.建立pparent和subR之间的关系
-		//与上一个节点建立连接
+		/*3.建立pparent和subR之间的关系
+		与上一个节点建立连接*/
 		if (parent == _root)
 		{
 			_root = subR;
@@ -391,7 +410,7 @@ private:
 		else
 		{
 			subR->_parent = pparent;
-			if (parent = pparent->_left) {
+			if (parent == pparent->_left) {
 				pparent->_left = subR;
 			}
 			else{
@@ -399,14 +418,14 @@ private:
 			}
 		}
 
-		//更新平衡因子
+		/*更新平衡因子*/
 		parent->_bf = 0;
 		subR->_bf = 0;
 	}
 
-
-	void rotateR(Node* parent)
+	void RotateR(Node* parent)
 	{
+
 		Node* subL = parent->_left;
 		Node* subLR = subL->_right;
 		Node* pparent = parent->_parent;
@@ -422,36 +441,39 @@ private:
 		subL->_right = parent;
 		parent->_parent = subL;
 
-		if (parent == _root){
+		if (parent == _root)
+		{
 			_root = subL;
 			subL->_parent = nullptr;
 		}
-		else {
-			subL->_parent == pparent;
-			if (parent = pparent->_left) {
+		else
+		{
+			subL->_parent = pparent;
+			if (parent == pparent->_left) {
 				pparent->_left = subL;
 			}
-			else{
+			else {
 				pparent->_right = subL;
 			}
+
 		}
-		parent->_bf = 0;
-		subL->_bf = 0;
+
+		parent->_bf = subL->_bf = 0;
 	}
 
-	void rotateLR(Node* parent)
+	void RotateLR(Node* parent)
 	{
 		Node* subL = parent->_left;
 		Node* subLR = subL->_right;
 
 		int bf = subLR->_bf;
 	
-		rotateL(subL);
+		RotateL(subL);
 		//parent并不为最小不平衡子树的根，所以要在旋转以后重新赋值
-		rotateR(parent);
+		RotateR(parent);
 		
 		//各点的bf值由调整前subLR的bf值决定
-		if (_bf == 0) {
+		if (bf == 0) {
 			parent->_bf = 0;
 			subL->_bf = 0;
 			subLR->_bf = 0;
@@ -474,16 +496,16 @@ private:
 		}
 	}
 
-	void rotateRL(Node* parent)
+	void RotateRL(Node* parent)
 	{
 		Node* subR = parent->_right;
 		Node* subRL = subR->_left;
 		int bf = subRL->_bf;
 
-		rotateR(subR);
-		rotateL(parent);
+		RotateR(subR);
+		RotateL(parent);
 
-		if (_bf == 0) {
+		if (bf == 0) {
 			parent->_bf = 0;
 			subR->_bf = 0;
 			subRL->_bf = 0;
@@ -507,6 +529,7 @@ private:
 
 	}
 
+
 	void _Inorder(Node* root)
 	{
 		if (!root) {
@@ -517,7 +540,7 @@ private:
 		_Inorder(root->_right);
 	}
 
-	void _Height(Node* root)
+	int _Height(Node* root)
 	{
 		if (!root) {
 			return 0;
